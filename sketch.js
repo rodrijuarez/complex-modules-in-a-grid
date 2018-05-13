@@ -1,13 +1,6 @@
-let tileCountX = 2;
-let tileCountY = 2;
-
-let count = 50;
-let colorStep = 20;
-
-let lineWeight = 0;
-let strokeColor = 0;
-
-let backgroundColor = 0;
+let tileCountX = 6;
+let tileCountY = 6;
+let count = 0;
 
 let drawMode = 1;
 
@@ -17,76 +10,36 @@ function setup() {
 
 function draw() {
   colorMode(HSB, 360, 100, 100);
-  strokeWeight(0.5);
-  strokeCap(SQUARE);
+  rectMode(CENTER);
+  smooth();
+  stroke(0);
+  noFill();
+  background(360);
 
-  background(backgroundColor);
-
+  count = mouseX / 20 + 5;
+  let para = mouseY / height - 0.5;
 
   for (let gridY = 0; gridY <= tileCountY; gridY++) {
     for (let gridX = 0; gridX <= tileCountX; gridX++) {
       let tileWidth = width / tileCountX;
       let tileHeight = height / tileCountY;
-      let posX = tileWidth * gridX;
-      let posY = tileHeight * gridY;
+      let posX = tileWidth * gridX + tileWidth / 2;
+      let posY = tileHeight * gridY + tileHeight / 2;
 
-      let x1 = tileWidth / 2;
-      let y1 = tileHeight / 2;
-      let x2 = 0;
-      let y2 = 0;
       push();
       translate(posX, posY);
 
-      for (let side = 0; side < 4; side++) {
-        for (let i = 0; i < count; i++) {
-          // move end point around the four sides of the tile
-          if (side == 0) {
-            x2 += tileWidth / count;
-            y2 = 0;
-          }
-          if (side == 1) {
-            x2 = tileWidth;
-            y2 += tileHeight / count;
-          }
-          if (side == 2) {
-            x2 -= tileWidth / count;
-            y2 = tileHeight;
-          }
-          if (side == 3) {
-            x2 = 0;
-            y2 -= tileHeight / count;
-          }
-
-          // adjust weight and color of the line
-          if (i < count / 2) {
-            lineWeight += 1;
-            strokeColor += 60;
-          } else {
-            lineWeight -= 1;
-            strokeColor -= 60;
-          }
-
-          // set colors depending on draw mode
-          switch (drawMode) {
-            case 1:
-              backgroundColor = 360;
-              stroke(0);
-              break;
-            case 2:
-              backgroundColor = 360;
-              stroke(0);
-              strokeWeight(lineWeight);
-              break;
-            case 3:
-              backgroundColor = 0;
-              stroke(strokeColor);
-              strokeWeight(mouseX / 100);
-              break;
-          }
-
-          // draw the line
-          line(x1, y1, x2, y2);
-        }
+      // switch between modules
+      switch (drawMode) {
+        case 1:
+          firstModeDraw(tileWidth, tileHeight, count, para);
+          break;
+        case 2:
+          secondModeDraw(tileWidth, tileHeight, count, para);
+          break;
+        case 3:
+          thirdModeDraw(tileWidth, tileHeight, count, para);
+          break;
       }
 
       pop();
@@ -94,11 +47,53 @@ function draw() {
   }
 }
 
-function keyPressed() {
-  if (key == 's' || key == 'S') saveFrame(timestamp() + '_##.png');
-  if (key == 'p' || key == 'P') savePDF = true;
+function firstModeDraw(tileWidth, tileHeight, count, para) {
+  translate(-tileWidth / 2, -tileHeight / 2);
+  for (let i = 0; i < count; i++) {
+    line(0, (para + 0.5) * tileHeight, tileWidth, i * tileHeight / count);
+    line(
+      0,
+      i * tileHeight / count,
+      tileWidth,
+      tileHeight - (para + 0.5) * tileHeight,
+    );
+  }
+}
 
-  if (key == 'q' || key == 'Q') drawMode = 1;
-  if (key == 'w' || key == 'W') drawMode = 2;
-  if (key == 'e' || key == 'E') drawMode = 3;
+function secondModeDraw(tileWidth, tileHeight, count, para) {
+  for (let i = 0; i <= count; i++) {
+    const x1 = para * tileWidth,
+      y1 = para * tileHeight;
+
+    const offset = i / count - 0.5;
+
+    line(x1, y1, tileWidth / 2, offset * tileHeight);
+    line(x1, y1, -tileWidth / 2, offset * tileHeight);
+    line(x1, y1, offset * tileWidth, tileHeight / 2);
+    line(x1, y1, offset * tileWidth, -tileHeight / 2);
+  }
+}
+
+function thirdModeDraw(tileWidth, tileHeight, count, para) {
+  for (let i = 0; i <= count; i++) {
+    const x1 = 0,
+      y1 = para * tileHeight,
+      offset = i / count - 0.5;
+
+    line(x1, y1, tileWidth / 2, offset * tileHeight);
+    line(x1, y1, -tileWidth / 2, offset * tileHeight);
+    line(x1, y1, offset * tileWidth, tileHeight / 2);
+    line(x1, y1, offset * tileWidth, -tileHeight / 2);
+  }
+}
+
+function keyReleased() {
+  if (key == '1') drawMode = 1;
+  if (key == '2') drawMode = 2;
+  if (key == '3') drawMode = 3;
+
+  if (key == 'a' || key == 'A') tileCountY = max(tileCountY - 1, 1);
+  if (key == 's' || key == 'S') tileCountY += 1;
+  if (key == 'd' || key == 'D') tileCountX = max(tileCountX - 1, 1);
+  if (key == 'f' || key == 'F') tileCountX += 1;
 }
