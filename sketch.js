@@ -1,63 +1,104 @@
-const tileCountX = 10;
-const tileCountY = 10;
-let tileWidth, tileHeight;
+let tileCountX = 2;
+let tileCountY = 2;
 
-let count = 0;
-let colorStep = 15;
-let circleCount;
-let endSize, endOffset;
+let count = 50;
+let colorStep = 20;
 
-let actRandomSeed = 0;
+let lineWeight = 0;
+let strokeColor = 0;
+
+let backgroundColor = 0;
+
+let drawMode = 1;
 
 function setup() {
-  createCanvas(800, 800);
-  tileWidth = width / tileCountX;
-  tileHeight = height / tileCountY;
+  createCanvas(600, 600);
 }
 
 function draw() {
-  noFill();
-  stroke(0, 128);
-  background(255);
-  randomSeed(actRandomSeed);
+  colorMode(HSB, 360, 100, 100);
+  strokeWeight(0.5);
+  strokeCap(SQUARE);
 
-  translate(width / tileCountX / 2, height / tileCountY / 2);
+  background(backgroundColor);
 
-  circleCount = mouseX / 30 + 1;
-  endSize = map(mouseX, 0, width, tileWidth / 2.0, 0);
-  endOffset = map(mouseY, 0, height, 0, (tileWidth - endSize) / 2);
 
   for (let gridY = 0; gridY <= tileCountY; gridY++) {
     for (let gridX = 0; gridX <= tileCountX; gridX++) {
+      let tileWidth = width / tileCountX;
+      let tileHeight = height / tileCountY;
+      let posX = tileWidth * gridX;
+      let posY = tileHeight * gridY;
+
+      let x1 = tileWidth / 2;
+      let y1 = tileHeight / 2;
+      let x2 = 0;
+      let y2 = 0;
       push();
+      translate(posX, posY);
 
-      translate(tileWidth * gridX, tileHeight * gridY);
-      scale(1, tileHeight / tileWidth);
+      for (let side = 0; side < 4; side++) {
+        for (let i = 0; i < count; i++) {
+          // move end point around the four sides of the tile
+          if (side == 0) {
+            x2 += tileWidth / count;
+            y2 = 0;
+          }
+          if (side == 1) {
+            x2 = tileWidth;
+            y2 += tileHeight / count;
+          }
+          if (side == 2) {
+            x2 -= tileWidth / count;
+            y2 = tileHeight;
+          }
+          if (side == 3) {
+            x2 = 0;
+            y2 -= tileHeight / count;
+          }
 
-      const toggle = round(random(0, 5));
+          // adjust weight and color of the line
+          if (i < count / 2) {
+            lineWeight += 1;
+            strokeColor += 60;
+          } else {
+            lineWeight -= 1;
+            strokeColor -= 60;
+          }
 
-      switch (toggle) {
-        case 1:
-          rotate(-HALF_PI);
-          break;
-        case 2:
-          rotate(0);
-          break;
-        case 3:
-          rotate(HALF_PI);
-          break;
-        default:
-          rotate(PI);
-          break;
-      }
+          // set colors depending on draw mode
+          switch (drawMode) {
+            case 1:
+              backgroundColor = 360;
+              stroke(0);
+              break;
+            case 2:
+              backgroundColor = 360;
+              stroke(0);
+              strokeWeight(lineWeight);
+              break;
+            case 3:
+              backgroundColor = 0;
+              stroke(strokeColor);
+              strokeWeight(mouseX / 100);
+              break;
+          }
 
-      for (let i = 0; i < circleCount; i++) {
-        const diameter = map(i, 0, circleCount - 1, tileWidth, endSize);
-        const offset = map(i, 0, circleCount - 1, 0, endOffset);
-        ellipse(offset, 0, diameter, diameter);
+          // draw the line
+          line(x1, y1, x2, y2);
+        }
       }
 
       pop();
     }
   }
+}
+
+function keyPressed() {
+  if (key == 's' || key == 'S') saveFrame(timestamp() + '_##.png');
+  if (key == 'p' || key == 'P') savePDF = true;
+
+  if (key == 'q' || key == 'Q') drawMode = 1;
+  if (key == 'w' || key == 'W') drawMode = 2;
+  if (key == 'e' || key == 'E') drawMode = 3;
 }
